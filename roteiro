@@ -1,0 +1,229 @@
+meu aplicativo de finanças
+
+recursos:
+    tela inicial
+        mostrar mes atual
+            mostrar saldo geral atual
+                se houver alguma previsão, mostrar
+            mostrar saldos gerais de cada conta
+                se houver alguma previsão, mostrar pra cada conta
+
+    fazer um registro:
+        botão de ação abrir tela_Lançamentos
+            escolher entre despesa(default) receita e transferencias
+            inserir valor: float
+            manter ou mudar status: false(default)
+            inserir descrição: string
+
+
+
+Banco de dados
+    tabela registros
+        nome: String
+        valor: Float
+        status: Boolean // resolvido ou pendente
+        categoria: tabela categorias
+        caixa: lista tabelas caixas e cartoes de credito
+        data: editável mas com valor padrão = data atual: dia, mes, ano
+        repetir_lançamento: Boolean, default false
+        key: Hash, para manipulação de todos os itens criados em cada mes caso repetir=True
+        fixo: opções de período, default:mensal
+        parcelado: quantidade de parcelas, default:1        
+        tags: listar opções tabela tags
+        atrasado?: Boolean
+
+    tabela caixas
+        nome: String
+        tipo: tabela contas || tabela cartoes
+        cahve estrangeira: do tipo acima
+
+        tabela contas
+            valor: Float
+            tipo: conta corrente, poupança, outros
+
+        tabela cartoes
+            instituição: String lista
+            vencimento: Int
+            fechamento: Int
+            limite:
+                total: Float
+                usado: Float
+                disponivel: Float
+            conta pagadora: listar tabela contas
+
+    tabela meses
+        mês: string
+        total
+            lançamentos: int
+            despesas: Float
+            receitas: Float
+            balanço: Float
+
+    tabela anos
+        ano: int
+        total
+            lançamentos: int
+            despesas: Float
+            receitas: Float
+            balanço: Float
+
+    tabela tags
+        tag: String
+        n_lançamentos: int
+        lançamentos: select * from REGISTROS where tag = String
+
+    tabela categorias
+        nome: String
+        n_lançamentos: int
+        lançamentos: select * from REGISTROS where categoria = String
+
+
+
+
+
+
+
+
+
+
+
+registro {
+    nome: String
+    valor: Float digitar apenas números e converter para moeda local
+    status: Boolean // resolvido ou pendente
+    caixa: lista com opções
+    data: editável mas com valor padrão = data atual
+    repetir_lançamento:{
+        default: false
+        case true
+            key: para manipulação de todos os itens criados em cada mes
+            fixo: opções de período
+            parcelado: quantidade de parcelas
+    }
+    tags: lista com opções ou adicionar nova na hora
+
+    atrasado?: Boolean
+}
+
+receita, despesa extends registro {
+    ...
+    tipo: receita || despesa
+    categoria: opções de acordo com a classe
+}
+
+transferencias extends registro {
+    ...
+    tipo: transf
+    caixa_destino: lista com opções
+}
+
+
+
+
+
+tela_HOME {
+    saldo geral:
+        atual: soma de todas as operações efetivadas do primeiro até dia atual do mês corrente
+        previsto: soma de todas as operações efetivadas do primeiro até último dia do mês corrente
+    
+    saldo por contas: listar contas cadastradas
+        atual: soma de todas as operações efetivadas primeiro até dia atual do mês corrente
+        previsto: soma de todas as operações efetivadas primeiro até último dia do mês corrente
+    
+    cartoes de credito: listar todos cadastrados
+        nome: String
+        limite:
+            total: Float
+            usado: Float
+            disponivel: Float
+        fatura:
+            anteriores: listar para trás, por mês, a partir do mês anterior a fatura atual não paga
+            atual: {
+                valor: Float
+                paga?: Boolean
+            }
+            próximas: listar para frente, por mês, a partir do mês seguinte a fatura atual paga
+    
+    menu:
+        HOME
+        Lançamentos
+        Adicionar_lançamento
+        Relatórios
+        Metas
+
+}
+
+tela_Lançamentos {
+    pesquisar?: registro.nome
+    filtrar?:
+        tipo de registro: receita, despesa, transf, fixos e parcelados
+        status: resolvido, pendente
+        contas: lista de contas cadastradas
+        categorias: lista de categorias checkboxs
+        tags: lista de tags criadas
+    mês: mês atual por padrão com slider para mês antecedente e subsequente
+    registros: listar todos registros {}
+        seções: por dia que tenha registro {} crescente ou decrescente
+        clicar registro?: tela_Editar_Registro
+            tipo de registro?
+            status?
+            descrição?
+            categoria?
+            caixa?
+            data?
+            repetir?
+            tags?
+    totais:
+        atuais:
+        previstas:
+            receita, despesa, saldo
+        
+}
+
+tela_Adicionar_lançamento {
+    tipo: slider com despesa, receita e transf. // this.tipo
+    valor: this.valor
+    status: this.status
+    descrição: this.nome
+    categoria: this.categoria
+    caixa: this.caixa
+    data: this.data
+    repetir?
+    tags?
+
+}
+
+tela_Relatórios {
+    mês: mês atual por padrão com slider para mês antecedente e subsequente
+    considerar movimentações não pagas: Boolean
+    balanço:
+        filtrar por conta? padrão = todas as contas
+        gráfico
+            receitas
+            despesas
+            saldo
+    despesas por categoria: listar lançamentos tipos despesa,
+    por categoria e somatório dos valores, de forma decrescente, do mês corrente,
+    incluindo os lançamentos dentro de cada cartao de credito. E mostrar proporção em %
+        cada categoria: lista todas as dispesas do mesmo tipo no mes corrente de forma crescente
+
+}
+
+tela_Metas {
+    criar nova meta?
+    lista de metas: listar metas cadastradas
+        categoria: lista de categorias
+        disponível: somatório de lançamentos dessa categorias
+        estipulado: valor alvo
+        barra de proporção: disponível/estipulado*100 %
+    clicar meta específica?: tela_Editar_meta
+        categoria?:
+        editar?
+        deletar?
+        mês: mês atual por padrão com slider para mês antecedente e subsequente
+        disponível: somatório de lançamentos dessa categorias
+        estipulado: valor alvo
+        barra de proporção: disponível/estipulado*100 %
+        lista de lancamentos da categoria: listar e mostrar todas de forma crescente
+
+}
